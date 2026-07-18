@@ -10,8 +10,32 @@ const NewBook = (props) => {
   const [genres, setGenres] = useState([]);
 
   const [createBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    refetchQueries: [{ query: ALL_AUTHORS }],
     onError: (error) => console.error(error.message),
+    update: (cache, response) => {
+      const addedBook = response.data.addBook;
+
+      // cache is different for queries with different variables
+      // so each query must get its own udpate
+      cache.updateQuery({ query: ALL_BOOKS }, (existingData) => {
+        if (!existingData) return;
+        return {
+          allBooks: existingData.allBooks.concat(addedBook),
+        };
+      });
+
+      genres.forEach((genre) => {
+        cache.updateQuery(
+          { query: ALL_BOOKS, variables: { genre } },
+          (existingData) => {
+            if (!existingData) return;
+            return {
+              allBooks: existingData.allBooks.concat(addedBook),
+            };
+          },
+        );
+      });
+    },
   });
 
   if (!props.show) {
@@ -21,7 +45,7 @@ const NewBook = (props) => {
   const submit = async (event) => {
     event.preventDefault();
 
-    createBook({
+    await createBook({
       variables: { title, author, published: parseInt(published), genres },
     });
 
@@ -72,11 +96,12 @@ const NewBook = (props) => {
         </div>
 
         <div>
-          <label htmlFor="genre" />
+          {/* <label htmlFor="genre" /> */}
           <input
             value={genre}
+            aria-label="genre"
             name="genre"
-            id="genre"
+            // id="genre"
             onChange={({ target }) => setGenre(target.value)}
           />
 

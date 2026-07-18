@@ -21,7 +21,7 @@ const UpdateAuthor = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    changeBirthyear({
+    await changeBirthyear({
       variables: { name, born: parseInt(born) },
     });
 
