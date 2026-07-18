@@ -11,6 +11,7 @@ const UpdateAuthor = () => {
 
   const [changeBirthyear] = useMutation(EDIT_BIRTHYEAR, {
     refetchQueries: [{ query: ALL_AUTHORS }],
+    onError: (error) => console.error(error.message),
   });
 
   if (result.loading) {
@@ -40,7 +41,9 @@ const UpdateAuthor = () => {
           onChange={({ target }) => setName(target.value)}
         >
           {result.data.allAuthors.map((a) => (
-            <option value={a.name}>{a.name}</option>
+            <option key={a.id} value={a.name}>
+              {a.name}
+            </option>
           ))}
         </select>
       </div>
